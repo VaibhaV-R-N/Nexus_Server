@@ -20,12 +20,16 @@ const getNewRoom=(id,password)=>{
 
 
 
-const getNewMessage = (username,content,color,file)=>{
+const getNewMessage = (username,content,color,file,date)=>{
     return {
         username,
         content,
         color,
-        
+        datetime: date || new Date().toLocaleString("en-US",{
+            month:"short",
+            day:"numeric",
+         
+          }),
         file:file || undefined
     }
 }
@@ -106,7 +110,7 @@ io.on("connection",(socket)=>{
             if(!room){
                 const NewRoom = getNewRoom(roomId,password)
                 NewRoom.users.push(getNewUser(username,socket.id,color))
-                const newMessage = getNewMessage('Server',`${username || 'unknown'} has created the room '${roomId}'! ✨`)
+                const newMessage = getNewMessage('Server',`${username || 'unknown'} has created the room '${roomId}'! ✨`,"#000000",undefined,undefined)
                 Rooms.push(NewRoom)
                 socket.join(roomId)
                 io.to(roomId).emit("fromServer",{messages:newMessage,roomId,password})
@@ -137,7 +141,7 @@ io.on("connection",(socket)=>{
             if(roomId === "public"){
                 socket.join("public")
                 addUserToRoom("public",getNewUser(username,socket.id,color))
-                addMessageToRoom("public",getNewMessage("Server",`${username || "unknown"} has joined the room '${roomId}' ! ✨`,color))
+                addMessageToRoom("public",getNewMessage("Server",`${username || "unknown"} has joined the room '${roomId}' ! ✨`,color,undefined,undefined))
                 const publicRoom = Rooms.find((room)=>room.id ==="public")
                 const messages = publicRoom.messages
                 io.to(roomId).emit("fromServer",{messages,roomId,password})
@@ -151,7 +155,7 @@ io.on("connection",(socket)=>{
                         if(room.password === password){
                             socket.join(roomId)
                             addUserToRoom(roomId,getNewUser(username,socket.id,color))
-                            const newMessage = getNewMessage("Server",`${username || "unknown"} has joined the room '${roomId}' ! ✨`,color)
+                            const newMessage = getNewMessage("Server",`${username || "unknown"} has joined the room '${roomId}' ! ✨`,color,undefined,undefined)
                
                             io.to(roomId).emit("fromServer",{messages:newMessage,roomId,password})
                             callBack({ok:true})
@@ -177,7 +181,7 @@ io.on("connection",(socket)=>{
 
         let password,contextroom
         if(message.content){
-            const newMessage = getNewMessage(message.username,message.content,message.color,message.file)
+            const newMessage = getNewMessage(message.username,message.content,message.color,message.file,message.datetime)
             Rooms.forEach((room)=>{
                 if(room.id === roomId){
                     password = room.password
@@ -210,10 +214,10 @@ io.on("connection",(socket)=>{
                    return user.username !== username
                 })
                 if(roomId === "public"){
-                    room.messages.push(getNewMessage("Server",`${username || "unknown"} has left the room...🚪`,"#000000"))
+                    room.messages.push(getNewMessage("Server",`${username || "unknown"} has left the room...🚪`,"#000000",undefined,undefined))
                     messages = room.messages
                 }else{
-                    const newMessage = getNewMessage("Server",`${username || "unknown"} has left the room...🚪`,"#000000")
+                    const newMessage = getNewMessage("Server",`${username || "unknown"} has left the room...🚪`,"#000000",undefined,undefined)
                     messages = newMessage
                 }
                 
@@ -263,7 +267,7 @@ io.on("connection",(socket)=>{
         userRooms.forEach(roomId=>{
 
             if(roomId==="public"){
-                addMessageToRoom(roomId,getNewMessage("Server",`${username} has left the room...🚪`,"#000000"))
+                addMessageToRoom(roomId,getNewMessage("Server",`${username} has left the room...🚪`,"#000000",undefined,undefined))
                 const room = Rooms.find((room)=>{
                     return room.id === roomId
                 })
@@ -271,7 +275,7 @@ io.on("connection",(socket)=>{
                     io.to(roomId).emit("fromServer",{messages:room.messages,roomId,password:room.password})
                 }
             }else{
-                const newMessage = getNewMessage("Server",`${username} has left the room...🚪`,"#000000")
+                const newMessage = getNewMessage("Server",`${username} has left the room...🚪`,"#000000",undefined,undefined)
                 const room = Rooms.find((room)=>{
                     return room.id === roomId
                 })
