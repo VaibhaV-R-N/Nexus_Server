@@ -25,13 +25,7 @@ const getNewMessage = (username,content,color,file)=>{
         username,
         content,
         color,
-        datetime:new Date().toLocaleString("en-US",{
-            month:"short",
-            day:"numeric",
-            hour:"numeric",
-            minute:"numeric",
-            hour12:true
-        }),
+        
         file:file || undefined
     }
 }
